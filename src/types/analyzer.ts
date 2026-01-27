@@ -1,7 +1,6 @@
 export type SkillLevel = 'beginner' | 'intermediate';
 export type TeamSize = 'solo' | 'small-team';
 export type Platform = 'web' | 'mobile';
-export type ConfidenceLevel = 'low' | 'medium' | 'high';
 
 export interface ProjectInput {
   projectIdea: string;
@@ -9,20 +8,14 @@ export interface ProjectInput {
   teamSize: TeamSize;
   totalWeeks: number;
   hoursPerWeek: number;
-  platform?: Platform;
-  useAI?: boolean;
+  platform: Platform;
+  useAI: boolean;
 }
 
 export interface Feature {
   name: string;
   description: string;
   estimatedHours: number;
-}
-
-export interface FeatureBreakdown {
-  core: Feature[];
-  optional: Feature[];
-  excluded: Feature[];
 }
 
 export interface TechStackItem {
@@ -35,15 +28,21 @@ export interface TimelineEstimate {
   bestCase: number;
   worstCase: number;
   bufferWeeks: number;
+  confidence: 'low' | 'medium' | 'high';
   bufferReason: string;
-  confidence: ConfidenceLevel;
 }
 
 export interface Risk {
+  severity: 'low' | 'medium' | 'high';
   title: string;
   description: string;
-  severity: 'low' | 'medium' | 'high';
-  mitigation?: string;
+  mitigation: string;
+}
+
+export interface FeatureBreakdown {
+  core: Feature[];
+  optional: Feature[];
+  excluded: Feature[];
 }
 
 export interface AnalysisResult {
@@ -54,7 +53,9 @@ export interface AnalysisResult {
   assumptions: string[];
 }
 
+// Comparison types
 export interface ComparisonScenario {
+  id: string;
   label: string;
   input: ProjectInput;
   result: AnalysisResult;
