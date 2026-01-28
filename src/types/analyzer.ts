@@ -50,6 +50,7 @@ export interface AnalysisResult {
   techStack: TechStackItem[];
   timeline: TimelineEstimate;
   risks: Risk[];
+  feasibility: Feasibility; // <--- NEW FIELD
   assumptions: string[];
 }
 
@@ -59,4 +60,10 @@ export interface ComparisonScenario {
   label: string;
   input: ProjectInput;
   result: AnalysisResult;
+}
+export interface Feasibility {
+  score: number;
+  verdict: string;
+  blindSpot: string;
+  pivotSuggestion: string;
 }

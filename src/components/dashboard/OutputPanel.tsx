@@ -8,15 +8,15 @@ import { TimelineEstimate } from './TimelineEstimate';
 import { RisksWarnings } from './RisksWarnings';
 import { AssumptionsList } from './AssumptionsList';
 import { generateMarkdown, downloadMarkdown } from '@/lib/exportUtils';
-
+import { FeasibilityCard } from './FeasibilityCard';
 interface OutputPanelProps {
   result: AnalysisResult | null;
   // 1. ADD INPUT TO INTERFACE
-  input: ProjectInput | null; 
+  input: ProjectInput | null;
   isLoading?: boolean;
 }
 
-export function OutputPanel({ result, input, isLoading }: OutputPanelProps)  {
+export function OutputPanel({ result, input, isLoading }: OutputPanelProps) {
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -76,16 +76,19 @@ export function OutputPanel({ result, input, isLoading }: OutputPanelProps)  {
     <div className="space-y-4">
       {/* Header with Export button */}
       <div className="flex justify-end mb-2">
-        <Button 
-          variant="outline" 
-          size="sm" 
+        <Button
+          variant="outline"
+          size="sm"
           className="gap-2"
           onClick={handleExport}
         >
-          <Download className="h-4 w-4" /> 
+          <Download className="h-4 w-4" />
           Export to Markdown
         </Button>
       </div>
+      {result.feasibility && (
+        <FeasibilityCard data={result.feasibility} delay={0} />
+      )}
       <FeatureBreakdown features={result.features} delay={0} />
       <TechStackCard techStack={result.techStack} delay={0.1} />
       <TimelineEstimate timeline={result.timeline} delay={0.2} />
