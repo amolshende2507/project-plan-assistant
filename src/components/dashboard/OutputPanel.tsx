@@ -1,17 +1,22 @@
 import { motion } from 'framer-motion';
+import { Download } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { AnalysisResult } from '@/types/analyzer';
 import { FeatureBreakdown } from './FeatureBreakdown';
 import { TechStackCard } from './TechStackCard';
 import { TimelineEstimate } from './TimelineEstimate';
 import { RisksWarnings } from './RisksWarnings';
 import { AssumptionsList } from './AssumptionsList';
+import { generateMarkdown, downloadMarkdown } from '@/lib/exportUtils';
 
 interface OutputPanelProps {
   result: AnalysisResult | null;
+  // 1. ADD INPUT TO INTERFACE
+  input: ProjectInput | null; 
   isLoading?: boolean;
 }
 
-export function OutputPanel({ result, isLoading }: OutputPanelProps) {
+export function OutputPanel({ result, input, isLoading }: OutputPanelProps)  {
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -61,9 +66,26 @@ export function OutputPanel({ result, isLoading }: OutputPanelProps) {
       </div>
     );
   }
+  const handleExport = () => {
+    if (!input || !result) return;
+    const md = generateMarkdown(input, result);
+    downloadMarkdown(md, 'project-blueprint.md');
+  };
 
   return (
     <div className="space-y-4">
+      {/* Header with Export button */}
+      <div className="flex justify-end mb-2">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="gap-2"
+          onClick={handleExport}
+        >
+          <Download className="h-4 w-4" /> 
+          Export to Markdown
+        </Button>
+      </div>
       <FeatureBreakdown features={result.features} delay={0} />
       <TechStackCard techStack={result.techStack} delay={0.1} />
       <TimelineEstimate timeline={result.timeline} delay={0.2} />

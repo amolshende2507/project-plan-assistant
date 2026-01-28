@@ -8,11 +8,14 @@ import { ProjectInput, AnalysisResult } from '@/types/analyzer';
 
 const Dashboard = () => {
   const [result, setResult] = useState<AnalysisResult | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+   const [currentInput, setCurrentInput] = useState<ProjectInput | null>(null);
+   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (input: ProjectInput) => {
     setIsLoading(true);
     setResult(null); // Clear previous results so UI doesn't look stale
+
+    setCurrentInput(input); 
 
     try {
       // 1. Send data to your local backend
@@ -61,7 +64,8 @@ const Dashboard = () => {
         
         <TwoColumnLayout
           left={<InputForm onSubmit={handleSubmit} isLoading={isLoading} />}
-          right={<OutputPanel result={result} isLoading={isLoading} />}
+  
+          right={<OutputPanel result={result} input={currentInput} isLoading={isLoading} />}
         />
       </main>
     </div>
