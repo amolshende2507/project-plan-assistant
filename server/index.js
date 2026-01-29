@@ -24,6 +24,7 @@ CRITICAL INSTRUCTIONS:
 1. Be realistic but CONSTRUCTIVE. If a project is impossible, suggest a "Pivot" (a smaller, easier version).
 2. Cut scope ruthlessly to ensure they finish.
 3. Your output must be valid JSON matching the schema below.
+4. ALL fields in the schema are REQUIRED.
 
 JSON SCHEMA:
 {
@@ -43,20 +44,36 @@ JSON SCHEMA:
     "bufferReason": "string"
   },
   "risks": [
-    { "severity": "low" | "medium" | "high", "title": "string", "description": "string", "mitigation": "string" }
+    { 
+      "severity": "low" | "medium" | "high", 
+      "title": "string", 
+      "description": "string", 
+      "mitigation": "string" 
+    }
   ],
   "feasibility": {
-    "score": number, // 0 to 100
-    "verdict": "string", // e.g., "High Risk", "Doable", "Easy Win"
-    "blindSpot": "string", // A specific thing the user probably forgot (e.g., "Apple App Store approval takes 2 weeks")
-    "pivotSuggestion": "string" // IF score < 70, suggest a simpler version. IF score > 80, suggest a "Next Level" feature.
+    "score": number,
+    "verdict": "string",
+    "blindSpot": "string",
+    "pivotSuggestion": "string"
   },
+  "architectureDiagram": "string",
   "assumptions": ["string", "string"]
 }
 
+ARCHITECTURE DIAGRAM RULES:
+- The architectureDiagram must be a STRICTLY VALID Mermaid.js diagram
+- Use graph TD
+- DO NOT include markdown fences (no \`\`\`mermaid)
+- Show flow between:
+  Client → Server → Database
+- Include External APIs or AI services if used
+- Base components on the chosen Tech Stack
+
 SCENARIO LOGIC:
 - Beginner + Complex Idea: Suggest a Pivot to a "No-Code" or "CLI tool" version first.
-- Short Timeline: Warn about "Burnout Risk" but suggest cutting "Auth" and "Payments" to make it work.
+- Short Timeline: Warn about Burnout Risk and suggest cutting Auth and Payments.
+- Always generate an architecture diagram that matches the solution.
 `;
 // ---------------------------------------------------------
 // THE API ROUTE

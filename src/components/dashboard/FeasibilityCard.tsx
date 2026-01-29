@@ -10,13 +10,13 @@ interface FeasibilityCardProps {
 
 export function FeasibilityCard({ data, delay = 0 }: FeasibilityCardProps) {
   // Color coding based on score
-  const scoreColor = 
-    data.score >= 80 ? 'text-success' : 
-    data.score >= 50 ? 'text-warning' : 'text-destructive';
-    
-  const ringColor = 
-    data.score >= 80 ? 'border-success' : 
-    data.score >= 50 ? 'border-warning' : 'border-destructive';
+  const scoreColor =
+    data.score >= 80 ? 'text-success' :
+      data.score >= 50 ? 'text-warning' : 'text-destructive';
+
+  const ringColor =
+    data.score >= 80 ? 'border-success' :
+      data.score >= 50 ? 'border-warning' : 'border-destructive';
 
   return (
     <SectionCard
@@ -28,10 +28,24 @@ export function FeasibilityCard({ data, delay = 0 }: FeasibilityCardProps) {
       <div className="space-y-6">
         {/* Score & Verdict */}
         <div className="flex items-center gap-6">
-          <div className={cn("relative flex items-center justify-center w-20 h-20 rounded-full border-4 bg-surface-2", ringColor)}>
-            <div className="text-center">
-              <span className={cn("text-2xl font-bold block leading-none", scoreColor)}>{data.score}</span>
-              <span className="text-[10px] text-muted-foreground uppercase font-bold">Score</span>
+          <div
+            className={cn(
+              "relative flex items-center justify-center w-20 h-20 rounded-full border-4 bg-surface-2",
+              ringColor
+            )}
+          >
+            <div className="flex flex-col items-center justify-center text-center">
+              <span
+                className={cn(
+                  "text-2xl font-bold leading-none",
+                  scoreColor
+                )}
+              >
+                {data.score}
+              </span>
+              <span className="mt-1 text-[10px] font-semibold tracking-wide text-muted-foreground whitespace-nowrap">
+                SCORE
+              </span>
             </div>
           </div>
           <div>
@@ -44,13 +58,13 @@ export function FeasibilityCard({ data, delay = 0 }: FeasibilityCardProps) {
 
         {/* The Blind Spot (What they forgot) */}
         <div className="p-3 bg-muted/50 rounded-lg border border-border">
-            <div className="flex gap-2 mb-1">
-                <AlertOctagon className="h-4 w-4 text-warning" />
-                <span className="text-sm font-semibold text-foreground">Blind Spot Detected</span>
-            </div>
-            <p className="text-sm text-muted-foreground pl-6">
-                {data.blindSpot}
-            </p>
+          <div className="flex gap-2 mb-1">
+            <AlertOctagon className="h-4 w-4 text-warning" />
+            <span className="text-sm font-semibold text-foreground">Blind Spot Detected</span>
+          </div>
+          <p className="text-sm text-muted-foreground pl-6">
+            {data.blindSpot}
+          </p>
         </div>
 
         {/* The Pivot (The Constructive Advice) */}

@@ -1,99 +1,124 @@
 import { motion } from 'framer-motion';
-import { Download } from 'lucide-react';
+import { Download, Sparkles, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { AnalysisResult } from '@/types/analyzer';
+import { AnalysisResult, ProjectInput } from '@/types/analyzer';
 import { FeatureBreakdown } from './FeatureBreakdown';
 import { TechStackCard } from './TechStackCard';
 import { TimelineEstimate } from './TimelineEstimate';
 import { RisksWarnings } from './RisksWarnings';
 import { AssumptionsList } from './AssumptionsList';
-import { generateMarkdown, downloadMarkdown } from '@/lib/exportUtils';
 import { FeasibilityCard } from './FeasibilityCard';
+import { ArchitectureView } from './ArchitectureView';
+import { generateMarkdown, downloadMarkdown } from '@/lib/exportUtils';
+import { Badge } from '@/components/ui/badge';
+
 interface OutputPanelProps {
   result: AnalysisResult | null;
-  // 1. ADD INPUT TO INTERFACE
   input: ProjectInput | null;
   isLoading?: boolean;
 }
 
 export function OutputPanel({ result, input, isLoading }: OutputPanelProps) {
+  
+  // 1. IMPROVED LOADING SKELETON (Grid Layout)
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        {[1, 2, 3].map((i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: i * 0.1 }}
-            className="bg-card rounded-lg border border-border p-6 animate-pulse"
-          >
-            <div className="h-4 bg-muted rounded w-1/3 mb-4" />
-            <div className="space-y-2">
-              <div className="h-3 bg-muted rounded w-full" />
-              <div className="h-3 bg-muted rounded w-2/3" />
-            </div>
-          </motion.div>
-        ))}
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <div className="h-8 w-48 bg-muted rounded animate-pulse" />
+          <div className="h-9 w-32 bg-muted rounded animate-pulse" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="h-64 bg-card rounded-lg border border-border p-6 animate-pulse" />
+          <div className="h-64 bg-card rounded-lg border border-border p-6 animate-pulse" />
+        </div>
+        <div className="h-48 bg-card rounded-lg border border-border p-6 animate-pulse" />
+        <div className="h-96 bg-card rounded-lg border border-border p-6 animate-pulse" />
       </div>
     );
   }
 
+  // 2. EMPTY STATE
   if (!result) {
     return (
-      <div className="flex items-center justify-center h-full min-h-[400px]">
-        <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
-            <svg
-              className="w-8 h-8 text-muted-foreground"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-              />
-            </svg>
+      <div className="flex items-center justify-center h-full min-h-[500px] border-2 border-dashed border-border/50 rounded-xl bg-muted/5">
+        <div className="text-center p-8">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-primary/5 border border-primary/10 flex items-center justify-center">
+            <LayoutDashboard className="w-10 h-10 text-primary/60" />
           </div>
-          <h3 className="font-medium text-foreground mb-1">No Analysis Yet</h3>
-          <p className="text-sm text-muted-foreground max-w-[240px]">
-            Fill in your project details and click "Analyze Project" to see results
+          <h3 className="text-xl font-semibold text-foreground mb-2">Ready to Analyze</h3>
+          <p className="text-muted-foreground max-w-[280px] mx-auto leading-relaxed">
+            Fill in your project constraints on the left to generate an engineering-grade blueprint.
           </p>
         </div>
       </div>
     );
   }
+
   const handleExport = () => {
     if (!input || !result) return;
     const md = generateMarkdown(input, result);
     downloadMarkdown(md, 'project-blueprint.md');
   };
 
+  // 3. THE PROFESSIONAL GRID LAYOUT
   return (
-    <div className="space-y-4">
-      {/* Header with Export button */}
-      <div className="flex justify-end mb-2">
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-2"
+    <motion.div 
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 1 }} 
+      className="space-y-8 pb-12"
+    >
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-6">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <Sparkles className="h-5 w-5 text-primary" />
+            <h2 className="text-2xl font-bold text-foreground">Engineering Blueprint</h2>
+          </div>
+          <div className="flex gap-2">
+             <Badge variant="outline" className="text-xs font-normal text-muted-foreground">
+                {input?.skillLevel} Level
+             </Badge>
+             <Badge variant="outline" className="text-xs font-normal text-muted-foreground">
+                {input?.totalWeeks} Weeks
+             </Badge>
+          </div>
+        </div>
+        <Button 
+          variant="default" 
+          size="sm" 
+          className="gap-2 shadow-sm"
           onClick={handleExport}
         >
-          <Download className="h-4 w-4" />
-          Export to Markdown
+          <Download className="h-4 w-4" /> 
+          Export Plan
         </Button>
       </div>
-      {result.feasibility && (
-        <FeasibilityCard data={result.feasibility} delay={0} />
+
+      {/* ROW 1: STRATEGY (Feasibility & Timeline) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {result.feasibility && (
+          <FeasibilityCard data={result.feasibility} delay={0.1} />
+        )}
+        <TimelineEstimate timeline={result.timeline} delay={0.2} />
+      </div>
+
+      {/* ROW 2: ARCHITECTURE (Visual Break) */}
+      {result.architectureDiagram && (
+        <ArchitectureView code={result.architectureDiagram} delay={0.3} />
       )}
-      <FeatureBreakdown features={result.features} delay={0} />
-      <TechStackCard techStack={result.techStack} delay={0.1} />
-      <TimelineEstimate timeline={result.timeline} delay={0.2} />
-      <RisksWarnings risks={result.risks} delay={0.3} />
-      <AssumptionsList assumptions={result.assumptions} delay={0.4} />
-    </div>
+
+      {/* ROW 3: EXECUTION DETAILS (Tech & Features) */}
+      <div className="grid grid-cols-1 gap-6">
+        <TechStackCard techStack={result.techStack} delay={0.4} />
+        <FeatureBreakdown features={result.features} delay={0.5} />
+      </div>
+
+      {/* ROW 4: HAZARDS (Risks & Assumptions) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <RisksWarnings risks={result.risks} delay={0.6} />
+        <AssumptionsList assumptions={result.assumptions} delay={0.7} />
+      </div>
+    </motion.div>
   );
 }

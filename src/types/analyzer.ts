@@ -52,6 +52,7 @@ export interface AnalysisResult {
   risks: Risk[];
   feasibility: Feasibility; // <--- NEW FIELD
   assumptions: string[];
+  architectureDiagram: string;
 }
 
 // Comparison types
