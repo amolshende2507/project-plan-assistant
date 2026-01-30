@@ -51,11 +51,11 @@ JSON SCHEMA:
       "mitigation": "string" 
     }
   ],
-  "feasibility": {
-    "score": number,
-    "verdict": "string",
+    "feasibility": {
+    "score": number, // 0 to 100. (CRITICAL: Use 0-100 scale. 90=Excellent, 50=Risky, 10=Impossible. DO NOT USE 1-10 scale.)
+    "verdict": "string", // MAX 5 WORDS. (e.g., "High Risk", "Solid Plan", "Needs Pivot"). Do not write a sentence here.
     "blindSpot": "string",
-    "pivotSuggestion": "string"
+    "pivotSuggestion": "string" 
   },
   "architectureDiagram": "string",
   "assumptions": ["string", "string"]
