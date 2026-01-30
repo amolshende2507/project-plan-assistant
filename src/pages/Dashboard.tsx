@@ -1,12 +1,12 @@
-
 import { useState, useEffect } from 'react';
-import { toast } from 'sonner'; // Using Sonner as seen in your App.tsx
+import { toast } from 'sonner';
 import { Navbar } from '@/components/layout/Navbar';
 import { TwoColumnLayout } from '@/components/layout/TwoColumnLayout';
 import { InputForm } from '@/components/dashboard/InputForm';
 import { OutputPanel } from '@/components/dashboard/OutputPanel';
-import { ProjectInput, AnalysisResult } from '@/types/analyzer';
 import { HistoryList, HistoryItem } from '@/components/dashboard/HistoryList';
+import { ProjectInput, AnalysisResult } from '@/types/analyzer';
+
 const Dashboard = () => {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [currentInput, setCurrentInput] = useState<ProjectInput | null>(null);
@@ -19,6 +19,7 @@ const Dashboard = () => {
       setHistory(JSON.parse(saved));
     }
   }, []);
+
   const saveToHistory = (input: ProjectInput, res: AnalysisResult) => {
     const newItem: HistoryItem = {
       id: Date.now().toString(),
@@ -26,17 +27,25 @@ const Dashboard = () => {
       input,
       result: res
     };
-
-    // Keep max 10 items
     const updated = [newItem, ...history].slice(0, 10);
     setHistory(updated);
     localStorage.setItem('project_history', JSON.stringify(updated));
   };
+
   const clearHistory = () => {
     setHistory([]);
     localStorage.removeItem('project_history');
     toast.success("History cleared");
   };
+
+  // 🗑️ NEW FUNCTION: Delete Single Item
+  const deleteHistoryItem = (id: string) => {
+    const updated = history.filter(item => item.id !== id);
+    setHistory(updated);
+    localStorage.setItem('project_history', JSON.stringify(updated));
+    toast.success("Item deleted");
+  };
+
   const handleSubmit = async (input: ProjectInput) => {
     setIsLoading(true);
     setResult(null);
@@ -53,7 +62,7 @@ const Dashboard = () => {
 
       const data = await response.json();
       setResult(data);
-      saveToHistory(input, data); // <--- Save it here
+      saveToHistory(input, data);
       toast.success("Analysis Complete");
 
     } catch (error) {
@@ -72,15 +81,15 @@ const Dashboard = () => {
           left={
             <>
               <InputForm onSubmit={handleSubmit} isLoading={isLoading} />
-              {/* Add History List Below Input */}
-              <HistoryList
-                history={history}
+              <HistoryList 
+                history={history} 
                 onSelect={(item) => {
-                  setResult(item.result);
-                  setCurrentInput(item.input);
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                   setResult(item.result);
+                   setCurrentInput(item.input);
+                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
                 onClear={clearHistory}
+                onDelete={deleteHistoryItem} // 👈 PASS IT HERE
               />
             </>
           }
