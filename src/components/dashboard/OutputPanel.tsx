@@ -9,6 +9,7 @@ import { RisksWarnings } from './RisksWarnings';
 import { AssumptionsList } from './AssumptionsList';
 import { FeasibilityCard } from './FeasibilityCard';
 import { ArchitectureView } from './ArchitectureView';
+import { CodingPrompts } from './CodingPrompts'; // 👈 IMPORT THIS
 import { generateMarkdown, downloadMarkdown } from '@/lib/exportUtils';
 import { Badge } from '@/components/ui/badge';
 
@@ -20,7 +21,6 @@ interface OutputPanelProps {
 
 export function OutputPanel({ result, input, isLoading }: OutputPanelProps) {
   
-  // 1. IMPROVED LOADING SKELETON (Grid Layout)
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -38,7 +38,6 @@ export function OutputPanel({ result, input, isLoading }: OutputPanelProps) {
     );
   }
 
-  // 2. EMPTY STATE
   if (!result) {
     return (
       <div className="flex items-center justify-center h-full min-h-[500px] border-2 border-dashed border-border/50 rounded-xl bg-muted/5">
@@ -61,7 +60,6 @@ export function OutputPanel({ result, input, isLoading }: OutputPanelProps) {
     downloadMarkdown(md, 'project-blueprint.md');
   };
 
-  // 3. THE PROFESSIONAL GRID LAYOUT
   return (
     <motion.div 
       initial={{ opacity: 0 }} 
@@ -95,7 +93,7 @@ export function OutputPanel({ result, input, isLoading }: OutputPanelProps) {
         </Button>
       </div>
 
-      {/* ROW 1: STRATEGY (Feasibility & Timeline) */}
+      {/* ROW 1: STRATEGY */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {result.feasibility && (
           <FeasibilityCard data={result.feasibility} delay={0.1} />
@@ -103,18 +101,23 @@ export function OutputPanel({ result, input, isLoading }: OutputPanelProps) {
         <TimelineEstimate timeline={result.timeline} delay={0.2} />
       </div>
 
-      {/* ROW 2: ARCHITECTURE (Visual Break) */}
+      {/* ROW 2: ARCHITECTURE */}
       {result.architectureDiagram && (
         <ArchitectureView code={result.architectureDiagram} delay={0.3} />
       )}
 
-      {/* ROW 3: EXECUTION DETAILS (Tech & Features) */}
+      {/* ROW 3: EXECUTION DETAILS */}
       <div className="grid grid-cols-1 gap-6">
         <TechStackCard techStack={result.techStack} delay={0.4} />
         <FeatureBreakdown features={result.features} delay={0.5} />
       </div>
 
-      {/* ROW 4: HAZARDS (Risks & Assumptions) */}
+      {/* ROW 4: CODING ASSISTANT (NEW) */}
+      {input && (
+        <CodingPrompts input={input} result={result} delay={0.55} />
+      )}
+
+      {/* ROW 5: HAZARDS */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <RisksWarnings risks={result.risks} delay={0.6} />
         <AssumptionsList assumptions={result.assumptions} delay={0.7} />
