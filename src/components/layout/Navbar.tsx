@@ -7,18 +7,20 @@ const navLinks = [
   { href: '/dashboard', label: 'Analyzer' },
   { href: '/comparison', label: 'Compare' },
 ];
-
 export function Navbar() {
   const location = useLocation();
   
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center">
-        <Link to="/" className="flex items-center gap-2 mr-8">
+      {/* Added px-4 for mobile padding */}
+      <div className="container px-4 flex h-14 items-center justify-between">
+        <Link to="/" className="flex items-center gap-2">
           <div className="p-1.5 rounded-md bg-primary text-primary-foreground">
             <BarChart3 className="h-4 w-4" />
           </div>
-          <span className="font-semibold text-foreground">ProjectAnalyzer</span>
+          {/* Hide text on very small screens if needed, or keep it */}
+          <span className="font-semibold text-foreground hidden sm:inline-block">ProjectAnalyzer</span>
+          <span className="font-semibold text-foreground sm:hidden">Analyzer</span>
         </Link>
         
         <nav className="flex items-center gap-1">
@@ -27,7 +29,7 @@ export function Navbar() {
               key={link.href}
               to={link.href}
               className={cn(
-                'px-3 py-1.5 text-sm font-medium rounded-md transition-colors',
+                'px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors',
                 location.pathname === link.href
                   ? 'bg-accent text-accent-foreground'
                   : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
