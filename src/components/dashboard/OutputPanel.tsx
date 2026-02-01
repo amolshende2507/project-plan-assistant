@@ -1,6 +1,10 @@
 import { motion } from 'framer-motion';
-import { Download, Sparkles, LayoutDashboard } from 'lucide-react';
+import { Download, Sparkles, LayoutDashboard, Link2 } from 'lucide-react';
+import { toast } from 'sonner';
+
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+
 import { AnalysisResult, ProjectInput } from '@/types/analyzer';
 import { FeatureBreakdown } from './FeatureBreakdown';
 import { TechStackCard } from './TechStackCard';
@@ -9,9 +13,9 @@ import { RisksWarnings } from './RisksWarnings';
 import { AssumptionsList } from './AssumptionsList';
 import { FeasibilityCard } from './FeasibilityCard';
 import { ArchitectureView } from './ArchitectureView';
-import { CodingPrompts } from './CodingPrompts'; // 👈 IMPORT THIS
+import { CodingPrompts } from './CodingPrompts';
+
 import { generateMarkdown, downloadMarkdown } from '@/lib/exportUtils';
-import { Badge } from '@/components/ui/badge';
 
 interface OutputPanelProps {
   result: AnalysisResult | null;
@@ -20,7 +24,7 @@ interface OutputPanelProps {
 }
 
 export function OutputPanel({ result, input, isLoading }: OutputPanelProps) {
-  
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -45,9 +49,12 @@ export function OutputPanel({ result, input, isLoading }: OutputPanelProps) {
           <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-primary/5 border border-primary/10 flex items-center justify-center">
             <LayoutDashboard className="w-10 h-10 text-primary/60" />
           </div>
-          <h3 className="text-xl font-semibold text-foreground mb-2">Ready to Analyze</h3>
+          <h3 className="text-xl font-semibold text-foreground mb-2">
+            Ready to Analyze
+          </h3>
           <p className="text-muted-foreground max-w-[280px] mx-auto leading-relaxed">
-            Fill in your project constraints on the left to generate an engineering-grade blueprint.
+            Fill in your project constraints on the left to generate an
+            engineering-grade blueprint.
           </p>
         </div>
       </div>
@@ -60,37 +67,67 @@ export function OutputPanel({ result, input, isLoading }: OutputPanelProps) {
     downloadMarkdown(md, 'project-blueprint.md');
   };
 
+  // 🔗 SHARE HANDLER
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
+    toast.success('Link copied to clipboard!', {
+      description: 'Anyone with this link can view this configuration.',
+    });
+  };
+
   return (
-    <motion.div 
-      initial={{ opacity: 0 }} 
-      animate={{ opacity: 1 }} 
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       className="space-y-8 pb-12"
     >
-      {/* Header Section */}
+      {/* HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-6">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <Sparkles className="h-5 w-5 text-primary" />
-            <h2 className="text-2xl font-bold text-foreground">Engineering Blueprint</h2>
+            <h2 className="text-2xl font-bold text-foreground">
+              Engineering Blueprint
+            </h2>
           </div>
           <div className="flex gap-2">
-             <Badge variant="outline" className="text-xs font-normal text-muted-foreground">
-                {input?.skillLevel} Level
-             </Badge>
-             <Badge variant="outline" className="text-xs font-normal text-muted-foreground">
-                {input?.totalWeeks} Weeks
-             </Badge>
+            <Badge
+              variant="outline"
+              className="text-xs font-normal text-muted-foreground"
+            >
+              {input?.skillLevel} Level
+            </Badge>
+            <Badge
+              variant="outline"
+              className="text-xs font-normal text-muted-foreground"
+            >
+              {input?.totalWeeks} Weeks
+            </Badge>
           </div>
         </div>
-        <Button 
-          variant="default" 
-          size="sm" 
-          className="gap-2 shadow-sm"
-          onClick={handleExport}
-        >
-          <Download className="h-4 w-4" /> 
-          Export Plan
-        </Button>
+
+        {/* ACTION BUTTONS */}
+        <div className="flex gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            className="gap-2 shadow-sm"
+            onClick={handleShare}
+          >
+            <Link2 className="h-4 w-4" />
+            Share
+          </Button>
+
+          <Button
+            variant="default"
+            size="sm"
+            className="gap-2 shadow-sm"
+            onClick={handleExport}
+          >
+            <Download className="h-4 w-4" />
+            Export Plan
+          </Button>
+        </div>
       </div>
 
       {/* ROW 1: STRATEGY */}
@@ -106,18 +143,18 @@ export function OutputPanel({ result, input, isLoading }: OutputPanelProps) {
         <ArchitectureView code={result.architectureDiagram} delay={0.3} />
       )}
 
-      {/* ROW 3: EXECUTION DETAILS */}
+      {/* ROW 3: EXECUTION */}
       <div className="grid grid-cols-1 gap-6">
         <TechStackCard techStack={result.techStack} delay={0.4} />
         <FeatureBreakdown features={result.features} delay={0.5} />
       </div>
 
-      {/* ROW 4: CODING ASSISTANT (NEW) */}
+      {/* ROW 4: CODING PROMPTS */}
       {input && (
         <CodingPrompts input={input} result={result} delay={0.55} />
       )}
 
-      {/* ROW 5: HAZARDS */}
+      {/* ROW 5: RISKS */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <RisksWarnings risks={result.risks} delay={0.6} />
         <AssumptionsList assumptions={result.assumptions} delay={0.7} />
