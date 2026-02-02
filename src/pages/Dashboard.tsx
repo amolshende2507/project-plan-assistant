@@ -11,7 +11,7 @@ import { HistoryList, HistoryItem } from '@/components/dashboard/HistoryList';
 import { WarningBanner } from '@/components/shared/WarningBanner';
 
 import { ProjectInput, AnalysisResult } from '@/types/analyzer';
-
+import { Footer } from '@/components/layout/Footer';
 const Dashboard = () => {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [currentInput, setCurrentInput] = useState<ProjectInput | null>(null);
@@ -117,10 +117,10 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
 
-      <main className="container py-8">
+      <main className="container py-8 flex-1">
         {isSharedMode && (
           <div className="mb-6 animate-in fade-in slide-in-from-top-4">
             <WarningBanner
@@ -157,6 +157,7 @@ const Dashboard = () => {
           }
         />
       </main>
+      <Footer />
     </div>
   );
 };

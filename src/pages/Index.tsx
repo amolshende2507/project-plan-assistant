@@ -4,10 +4,10 @@ import { HowItWorks } from '@/components/landing/HowItWorks';
 import { WhyDifferent } from '@/components/landing/WhyDifferent';
 import { ExamplePreview } from '@/components/landing/ExamplePreview';
 import { FinalCTA } from '@/components/landing/FinalCTA';
-
+import { Footer } from '@/components/layout/Footer';
 const LandingPage = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
       <main>
         <Hero />
@@ -16,11 +16,7 @@ const LandingPage = () => {
         <ExamplePreview />
         <FinalCTA />
       </main>
-      <footer className="border-t border-border py-8">
-        <div className="container text-center text-sm text-muted-foreground">
-          <p>ProjectAnalyzer — Constraint-aware project planning</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };

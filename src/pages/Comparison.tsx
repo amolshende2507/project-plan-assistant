@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ProjectInput, ComparisonScenario, AnalysisResult } from '@/types/analyzer';
 import { Sparkles, ArrowRightLeft } from 'lucide-react';
-
+import { Footer } from '@/components/layout/Footer';
 // Default base settings for comparisons
 const BASE_INPUT: ProjectInput = {
   projectIdea: '',
@@ -102,9 +102,9 @@ const Comparison = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
-      <main className="container py-8">
+      <main className="container py-8 flex-1">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-foreground mb-2">Scenario Simulator</h1>
           <p className="text-muted-foreground">
@@ -192,6 +192,7 @@ const Comparison = () => {
           }
         />
       </main>
+      <Footer />
     </div>
   );
 };
