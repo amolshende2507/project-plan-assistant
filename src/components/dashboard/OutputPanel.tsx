@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Download, Sparkles, LayoutDashboard, Link2 } from 'lucide-react';
 import { toast } from 'sonner';
+import LZString from 'lz-string';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -24,7 +25,7 @@ interface OutputPanelProps {
 }
 
 export function OutputPanel({ result, input, isLoading }: OutputPanelProps) {
-
+  // Loading Skeleton
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -42,6 +43,7 @@ export function OutputPanel({ result, input, isLoading }: OutputPanelProps) {
     );
   }
 
+  // Empty State
   if (!result) {
     return (
       <div className="flex items-center justify-center h-full min-h-[500px] border-2 border-dashed border-border/50 rounded-xl bg-muted/5">
@@ -61,18 +63,38 @@ export function OutputPanel({ result, input, isLoading }: OutputPanelProps) {
     );
   }
 
+  // Export Markdown
   const handleExport = () => {
     if (!input || !result) return;
     const md = generateMarkdown(input, result);
     downloadMarkdown(md, 'project-blueprint.md');
   };
 
-  // 🔗 SHARE HANDLER
+  // 🔗 SHARE SNAPSHOT (COMPRESSED URL)
   const handleShare = () => {
-    navigator.clipboard.writeText(window.location.href);
-    toast.success('Link copied to clipboard!', {
-      description: 'Anyone with this link can view this configuration.',
-    });
+    if (!input || !result) return;
+
+    try {
+      const compressedResult = LZString.compressToEncodedURIComponent(
+        JSON.stringify(result)
+      );
+      const compressedInput = LZString.compressToEncodedURIComponent(
+        JSON.stringify(input)
+      );
+
+      const url = new URL(window.location.href);
+      url.searchParams.set('r', compressedResult);
+      url.searchParams.set('i', compressedInput);
+
+      navigator.clipboard.writeText(url.toString());
+
+      toast.success('Snapshot Link Created', {
+        description: 'This link contains the FULL analysis. Share it with anyone.',
+      });
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to create share link');
+    }
   };
 
   return (
@@ -115,7 +137,7 @@ export function OutputPanel({ result, input, isLoading }: OutputPanelProps) {
             onClick={handleShare}
           >
             <Link2 className="h-4 w-4" />
-            Share
+            Share Snapshot
           </Button>
 
           <Button
