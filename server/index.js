@@ -5,7 +5,11 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const app = express();
 const port = process.env.PORT || 5000;
-
+app.use(cors({
+  origin: '*', // 👈 Allow all origins
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type']
+}));
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -82,7 +86,7 @@ app.post('/api/analyze', async (req, res) => {
   try {
     const { projectIdea, skillLevel, teamSize, totalWeeks, hoursPerWeek, platform, useAI } = req.body;
 
-    console.log("📝 Analyzing Request:", { projectIdea: projectIdea.substring(0, 50) + "..." });
+    // console.log("📝 Analyzing Request:", { projectIdea: projectIdea.substring(0, 50) + "..." });
 
     // Construct the User Prompt
     const userPrompt = `
@@ -126,5 +130,5 @@ app.post('/api/analyze', async (req, res) => {
 
 // Start Server
 app.listen(port, () => {
-  console.log(`🚀 AI Brain online at http://localhost:${port}`);
+  // console.log(`🚀 AI Brain online at http://localhost:${port}`);
 });

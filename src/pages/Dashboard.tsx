@@ -20,7 +20,7 @@ const Dashboard = () => {
   const [isSharedMode, setIsSharedMode] = useState(false);
 
   const [searchParams, setSearchParams] = useSearchParams();
-
+  const API_URL = import.meta.env.VITE_API_URL || 'https://YOUR-BACKEND-URL.onrender.com';
   // Load history + check for shared link
   useEffect(() => {
     // Load local history
@@ -86,6 +86,7 @@ const Dashboard = () => {
     toast.success('Item deleted');
   };
 
+
   const handleSubmit = async (input: ProjectInput) => {
     setIsLoading(true);
     setResult(null);
@@ -96,7 +97,7 @@ const Dashboard = () => {
     setSearchParams({});
 
     try {
-      const response = await fetch('http://localhost:5000/api/analyze', {
+      const response = await fetch(`${API_URL}/api/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(input),
