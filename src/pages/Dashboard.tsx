@@ -9,9 +9,16 @@ import { InputForm } from '@/components/dashboard/InputForm';
 import { OutputPanel } from '@/components/dashboard/OutputPanel';
 import { HistoryList, HistoryItem } from '@/components/dashboard/HistoryList';
 import { WarningBanner } from '@/components/shared/WarningBanner';
+import { Footer } from '@/components/layout/Footer';
+
+import { useCredits } from '@/hooks/useCredits';
+import { CreditDialog } from '@/components/dashboard/CreditDialog';
+
+import { Badge } from '@/components/ui/badge';
+import { Coins } from 'lucide-react';
 
 import { ProjectInput, AnalysisResult } from '@/types/analyzer';
-import { Footer } from '@/components/layout/Footer';
+
 const Dashboard = () => {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [currentInput, setCurrentInput] = useState<ProjectInput | null>(null);
@@ -19,17 +26,22 @@ const Dashboard = () => {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isSharedMode, setIsSharedMode] = useState(false);
 
+  const [showPaywall, setShowPaywall] = useState(false);
+
   const [searchParams, setSearchParams] = useSearchParams();
-  const API_URL = import.meta.env.VITE_API_URL || 'https://YOUR-BACKEND-URL.onrender.com';
-  // Load history + check for shared link
+
+  const { credits, spendCredit } = useCredits();
+
+  const API_URL =
+    import.meta.env.VITE_API_URL || 'https://YOUR-BACKEND-URL.onrender.com';
+
+  // Load history + check for shared links
   useEffect(() => {
-    // Load local history
     const saved = localStorage.getItem('project_history');
     if (saved) {
       setHistory(JSON.parse(saved));
     }
 
-    // Check for shared data in URL
     const sharedResult = searchParams.get('r');
     const sharedInput = searchParams.get('i');
 
@@ -86,14 +98,20 @@ const Dashboard = () => {
     toast.success('Item deleted');
   };
 
-
   const handleSubmit = async (input: ProjectInput) => {
+    // ✅ CREDIT CHECK
+    const success = spendCredit();
+
+    if (!success) {
+      setShowPaywall(true);
+      return;
+    }
+
     setIsLoading(true);
     setResult(null);
     setCurrentInput(input);
     setIsSharedMode(false);
 
-    // Clear URL params when running a new analysis
     setSearchParams({});
 
     try {
@@ -108,6 +126,7 @@ const Dashboard = () => {
       const data = await response.json();
       setResult(data);
       saveToHistory(input, data);
+
       toast.success('Analysis Complete');
     } catch (error) {
       console.error(error);
@@ -120,6 +139,17 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
+
+      {/* CREDIT BALANCE */}
+      <div className="container pt-4 flex justify-end">
+        <Badge
+          variant={credits > 0 ? 'secondary' : 'destructive'}
+          className="gap-1.5 py-1.5 px-3"
+        >
+          <Coins className="h-3.5 w-3.5" />
+          {credits} Credits Left
+        </Badge>
+      </div>
 
       <main className="container py-8 flex-1">
         {isSharedMode && (
@@ -138,7 +168,7 @@ const Dashboard = () => {
               <InputForm onSubmit={handleSubmit} isLoading={isLoading} />
               <HistoryList
                 history={history}
-                onSelect={(item) => {
+                onSelect={item => {
                   setResult(item.result);
                   setCurrentInput(item.input);
                   setIsSharedMode(false);
@@ -158,6 +188,10 @@ const Dashboard = () => {
           }
         />
       </main>
+
+      {/* PAYWALL MODAL */}
+      <CreditDialog open={showPaywall} onOpenChange={setShowPaywall} />
+
       <Footer />
     </div>
   );
