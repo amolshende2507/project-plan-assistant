@@ -8,7 +8,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-
+import { SignInButton } from "@clerk/clerk-react";
 interface CreditDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -24,7 +24,7 @@ export function CreditDialog({ open, onOpenChange }: CreditDialogProps) {
           </div>
           <DialogTitle className="text-xl">Free Limit Reached</DialogTitle>
           <DialogDescription className="pt-2">
-            You've used all 3 free Guest credits. <br/>
+            You've used all 3 free Guest credits. <br />
             To continue generating Engineering Blueprints, please sign in.
           </DialogDescription>
         </DialogHeader>
@@ -41,9 +41,13 @@ export function CreditDialog({ open, onOpenChange }: CreditDialogProps) {
         </div>
 
         <DialogFooter className="flex flex-col gap-2">
-          <Button size="lg" className="w-full gap-2" onClick={() => alert("This would open Login Page")}>
-            <UserPlus className="h-4 w-4" /> Create Free Account
-          </Button>
+          {/* Wrap the button in Clerk's SignInButton */}
+          <SignInButton mode="modal">
+            <Button size="lg" className="w-full gap-2">
+              <UserPlus className="h-4 w-4" /> Create Free Account
+            </Button>
+          </SignInButton>
+
           <Button variant="ghost" className="w-full" onClick={() => onOpenChange(false)}>
             Close
           </Button>

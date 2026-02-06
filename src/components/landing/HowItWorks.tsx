@@ -1,70 +1,68 @@
+import { Target, ShieldAlert, Code2, Network, BrainCircuit, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { FileText, Cpu, CheckSquare } from 'lucide-react';
 
-const steps = [
+const features = [
   {
-    icon: FileText,
-    title: 'Describe Your Project',
-    description: 'Enter your project idea along with constraints like skill level, team size, and time availability.',
+    icon: <BrainCircuit className="h-6 w-6 text-primary" />,
+    title: "Constraint-Based Reasoning",
+    desc: "We don't just generate text. We solve for variables: Time, Skill, and Team Size.",
+    colSpan: "col-span-1 md:col-span-2",
   },
   {
-    icon: Cpu,
-    title: 'AI Analysis',
-    description: 'Our system analyzes feasibility, identifies risks, and breaks down features based on your constraints.',
+    icon: <ShieldAlert className="h-6 w-6 text-destructive" />,
+    title: "Risk Detection",
+    desc: "Find out why your project might fail before you write a single line of code.",
+    colSpan: "col-span-1",
   },
   {
-    icon: CheckSquare,
-    title: 'Get Structured Plan',
-    description: 'Receive a detailed breakdown with features, tech stack, timeline estimates, and honest risk assessment.',
+    icon: <Network className="h-6 w-6 text-blue-500" />,
+    title: "Visual Architecture",
+    desc: "Get auto-generated Mermaid.js diagrams showing how your DB, API, and Client connect.",
+    colSpan: "col-span-1",
+  },
+  {
+    icon: <Code2 className="h-6 w-6 text-green-500" />,
+    title: "Tech Stack Matching",
+    desc: "Stop using Kubernetes for your To-Do list. Get the stack that fits your deadline.",
+    colSpan: "col-span-1 md:col-span-2",
   },
 ];
 
 export function HowItWorks() {
   return (
-    <section className="py-20 bg-surface-2">
+    <section className="py-24 bg-surface-2 relative">
       <div className="container">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-12"
-        >
-          <h2 className="text-3xl font-bold text-foreground mb-4">How It Works</h2>
-          <p className="text-muted-foreground max-w-xl mx-auto">
-            Three simple steps to transform your idea into an actionable plan
-          </p>
-        </motion.div>
         
-        <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-          {steps.map((step, index) => (
+        {/* Section Header */}
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <h2 className="text-3xl font-bold mb-4">Why this isn't just another wrapper</h2>
+          <p className="text-muted-foreground text-lg">
+            Most AI tools give you code. We give you the <span className="text-foreground font-semibold">Engineering Strategy</span> required to actually ship it.
+          </p>
+        </div>
+
+        {/* Bento Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {features.map((feature, i) => (
             <motion.div
-              key={step.title}
+              key={i}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="relative"
+              transition={{ delay: i * 0.1 }}
+              className={`p-8 rounded-2xl bg-card border border-border hover:border-primary/50 transition-colors shadow-sm hover:shadow-md group ${feature.colSpan}`}
             >
-              {index < steps.length - 1 && (
-                <div className="hidden md:block absolute top-12 left-[60%] w-[80%] h-px bg-border" />
-              )}
-              
-              <div className="bg-card rounded-lg border border-border p-6 shadow-card relative z-10">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary">
-                    <step.icon className="h-6 w-6" />
-                  </div>
-                  <span className="text-sm font-medium text-muted-foreground">
-                    Step {index + 1}
-                  </span>
-                </div>
-                <h3 className="font-semibold text-foreground mb-2">{step.title}</h3>
-                <p className="text-sm text-muted-foreground">{step.description}</p>
+              <div className="h-12 w-12 rounded-lg bg-background border border-border flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                {feature.icon}
               </div>
+              <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                {feature.desc}
+              </p>
             </motion.div>
           ))}
         </div>
+
       </div>
     </section>
   );

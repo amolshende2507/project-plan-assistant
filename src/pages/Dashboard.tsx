@@ -18,7 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { Coins } from 'lucide-react';
 
 import { ProjectInput, AnalysisResult } from '@/types/analyzer';
-
+import { useUser } from "@clerk/clerk-react";
 const Dashboard = () => {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [currentInput, setCurrentInput] = useState<ProjectInput | null>(null);
@@ -31,6 +31,7 @@ const Dashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const { credits, spendCredit } = useCredits();
+  const { user, isSignedIn } = useUser(); 
 
   const API_URL =
     import.meta.env.VITE_API_URL || 'https://YOUR-BACKEND-URL.onrender.com';
@@ -139,6 +140,25 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
+      {/* Personalized Greeting */}
+      <div className="container pt-6 pb-2">
+        <div className="flex justify-between items-end">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">
+              {isSignedIn ? `Welcome back, ${user.firstName} 👋` : 'Project Analyzer'}
+            </h1>
+            <p className="text-muted-foreground">
+              {isSignedIn ? 'Ready to engineer your next big idea?' : 'Enter details below to generate a blueprint.'}
+            </p>
+          </div>
+          
+          {/* Credit Badge (Existing) */}
+          <Badge variant={credits > 0 ? "secondary" : "destructive"} className="gap-1.5 py-1.5 px-3">
+             <Coins className="h-3.5 w-3.5" />
+             {credits} Credits Left
+          </Badge>
+        </div>
+      </div>
 
       {/* CREDIT BALANCE */}
       <div className="container pt-4 flex justify-end">

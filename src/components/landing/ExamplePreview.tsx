@@ -1,97 +1,59 @@
-import { motion } from 'framer-motion';
-import { CheckCircle2, XCircle, AlertTriangle, Code2, Calendar } from 'lucide-react';
-import { ConfidenceBadge } from '@/components/shared/ConfidenceBadge';
+import { Check } from 'lucide-react';
+
+const steps = [
+  { label: "Analysing Constraints...", color: "text-blue-500" },
+  { label: "Detecting Skill Gaps...", color: "text-purple-500" },
+  { label: "Optimizing Tech Stack...", color: "text-yellow-500" },
+  { label: "Generating Blueprint...", color: "text-green-500" },
+];
 
 export function ExamplePreview() {
   return (
-    <section className="py-20 bg-surface-2">
+    <section className="py-24 overflow-hidden">
       <div className="container">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-12"
-        >
-          <h2 className="text-3xl font-bold text-foreground mb-4">Example Output</h2>
-          <p className="text-muted-foreground max-w-xl mx-auto">
-            A glimpse of what you'll receive for a "Task Management Dashboard" project
-          </p>
-        </motion.div>
-        
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="max-w-4xl mx-auto"
-        >
-          <div className="bg-card rounded-xl border border-border shadow-elevated overflow-hidden">
-            {/* Header */}
-            <div className="px-6 py-4 border-b border-border bg-surface-2">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-foreground">Analysis Results</h3>
-                <ConfidenceBadge level="medium" />
+        <div className="flex flex-col md:flex-row items-center gap-12">
+          
+          <div className="flex-1 space-y-6">
+            <h2 className="text-3xl font-bold">See inside the brain</h2>
+            <p className="text-muted-foreground text-lg">
+              Our system runs a multi-step engineering pipeline to ensure your plan isn't just hallucinated text—it's a viable strategy.
+            </p>
+            <ul className="space-y-4 mt-6">
+              {['Realistic Timeline Estimation', 'Feasibility Scoring (0-100)', 'Pivot Advice for Beginners'].map((item) => (
+                <li key={item} className="flex items-center gap-3">
+                  <div className="h-6 w-6 rounded-full bg-green-500/20 flex items-center justify-center">
+                    <Check className="h-3.5 w-3.5 text-green-600" />
+                  </div>
+                  <span className="font-medium">{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="flex-1 w-full max-w-md">
+            <div className="bg-slate-950 rounded-xl shadow-2xl overflow-hidden border border-slate-800 font-mono text-sm">
+              <div className="flex items-center gap-2 px-4 py-3 bg-slate-900 border-b border-slate-800">
+                <div className="w-3 h-3 rounded-full bg-red-500" />
+                <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                <div className="w-3 h-3 rounded-full bg-green-500" />
+                <span className="ml-2 text-slate-400 text-xs">analysis-pipeline — bash</span>
               </div>
-            </div>
-            
-            {/* Content Grid */}
-            <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border">
-              {/* Features */}
-              <div className="p-6">
-                <h4 className="text-sm font-medium text-muted-foreground mb-4">Feature Breakdown</h4>
-                <div className="space-y-3">
-                  <div className="flex items-start gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-success mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium text-foreground">User Authentication</p>
-                      <p className="text-xs text-muted-foreground">Core feature • 12 hours</p>
-                    </div>
+              <div className="p-6 space-y-4">
+                {steps.map((step, i) => (
+                  <div key={i} className="flex items-center gap-3 animate-in fade-in slide-in-from-left-4" style={{ animationDelay: `${i * 0.5}s`, animationFillMode: 'backwards' }}>
+                    <span className="text-slate-500">➜</span>
+                    <span className={step.color}>{step.label}</span>
+                    <span className="ml-auto text-xs text-slate-600">[Done]</span>
                   </div>
-                  <div className="flex items-start gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-success mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium text-foreground">Dashboard Interface</p>
-                      <p className="text-xs text-muted-foreground">Core feature • 16 hours</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <XCircle className="h-4 w-4 text-muted-foreground mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground line-through">Real-time Collaboration</p>
-                      <p className="text-xs text-muted-foreground">Excluded • 40 hours</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Timeline & Risks */}
-              <div className="p-6">
-                <h4 className="text-sm font-medium text-muted-foreground mb-4">Timeline & Risks</h4>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <Calendar className="h-4 w-4 text-primary" />
-                    <div>
-                      <p className="text-sm font-medium text-foreground">6-10 weeks</p>
-                      <p className="text-xs text-muted-foreground">+2 weeks buffer</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Code2 className="h-4 w-4 text-primary" />
-                    <div>
-                      <p className="text-sm font-medium text-foreground">React + TypeScript</p>
-                      <p className="text-xs text-muted-foreground">Recommended stack</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-2 p-2 rounded-md bg-warning/5 border border-warning/20">
-                    <AlertTriangle className="h-4 w-4 text-warning mt-0.5" />
-                    <p className="text-xs text-warning">Scope creep risk identified</p>
-                  </div>
+                ))}
+                <div className="pt-4 border-t border-slate-800 animate-in fade-in" style={{ animationDelay: '2.5s' }}>
+                  <span className="text-green-400">✔ Blueprint Ready.</span>
                 </div>
               </div>
             </div>
           </div>
-        </motion.div>
+
+        </div>
       </div>
     </section>
   );
