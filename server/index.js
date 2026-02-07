@@ -2,23 +2,29 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { createClient } = require('@supabase/supabase-js'); // Supabase
 
 const app = express();
 const port = process.env.PORT || 5000;
-app.use(cors({
-  origin: '*', // 👈 Allow all origins
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type']
-}));
-// Middleware
-app.use(cors());
+
+app.use(cors({ origin: '*' }));
 app.use(express.json());
 
-// Initialize Gemini
+// ---------------------------
+// Init Gemini
+// ---------------------------
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
+// ---------------------------
+// Init Supabase (Admin Mode)
+// ---------------------------
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+);
+
 // ---------------------------------------------------------
-// THE SYSTEM PROMPT (The Brain's Personality)
+// SYSTEM PROMPT
 // ---------------------------------------------------------
 const SYSTEM_PROMPT = `
 You are a Senior Technical Project Manager and Mentor.
@@ -55,9 +61,9 @@ JSON SCHEMA:
       "mitigation": "string" 
     }
   ],
-    "feasibility": {
-    "score": number, // 0 to 100. (CRITICAL: Use 0-100 scale. 90=Excellent, 50=Risky, 10=Impossible. DO NOT USE 1-10 scale.)
-    "verdict": "string", // MAX 5 WORDS. (e.g., "High Risk", "Solid Plan", "Needs Pivot"). Do not write a sentence here.
+  "feasibility": {
+    "score": number,
+    "verdict": "string",
     "blindSpot": "string",
     "pivotSuggestion": "string" 
   },
@@ -68,7 +74,7 @@ JSON SCHEMA:
 ARCHITECTURE DIAGRAM RULES:
 - The architectureDiagram must be a STRICTLY VALID Mermaid.js diagram
 - Use graph TD
-- DO NOT include markdown fences (no \`\`\`mermaid)
+- DO NOT include markdown fences
 - Show flow between:
   Client → Server → Database
 - Include External APIs or AI services if used
@@ -79,16 +85,44 @@ SCENARIO LOGIC:
 - Short Timeline: Warn about Burnout Risk and suggest cutting Auth and Payments.
 - Always generate an architecture diagram that matches the solution.
 `;
+
 // ---------------------------------------------------------
-// THE API ROUTE
+// API ROUTE
 // ---------------------------------------------------------
 app.post('/api/analyze', async (req, res) => {
   try {
-    const { projectIdea, skillLevel, teamSize, totalWeeks, hoursPerWeek, platform, useAI } = req.body;
+    const { projectIdea, userId, userEmail, skillLevel, teamSize, totalWeeks, hoursPerWeek, platform, useAI } = req.body;
 
-    // console.log("📝 Analyzing Request:", { projectIdea: projectIdea.substring(0, 50) + "..." });
+    console.log("📝 Request from:", userId || "Guest");
 
-    // Construct the User Prompt
+    // ---------------------------
+    // 1. CREDIT CHECK
+    // ---------------------------
+    if (userId) {
+      let { data: user } = await supabase
+        .from('users')
+        .select('credits')
+        .eq('user_id', userId)
+        .single();
+
+      if (!user) {
+        const { data: newUser } = await supabase
+          .from('users')
+          .insert([{ user_id: userId, email: userEmail, credits: 10 }])
+          .select()
+          .single();
+
+        user = newUser;
+      }
+
+      if (user.credits <= 0) {
+        return res.status(403).json({ error: "Insufficient credits. Please upgrade." });
+      }
+    }
+
+    // ---------------------------
+    // USER PROMPT
+    // ---------------------------
     const userPrompt = `
       PROJECT DETAILS:
       - Idea: ${projectIdea}
@@ -101,23 +135,40 @@ app.post('/api/analyze', async (req, res) => {
       Analyze this project based on the constraints. Return ONLY the JSON object.
     `;
 
-    // Initialize the model (Gemini 1.5 Flash is fast and free)
-    const model = genAI.getGenerativeModel({ 
+    // ---------------------------
+    // GEMINI CALL
+    // ---------------------------
+    const model = genAI.getGenerativeModel({
       model: "gemini-2.5-flash",
-      generationConfig: { responseMimeType: "application/json" } // Force JSON
+      generationConfig: { responseMimeType: "application/json" }
     });
 
     const result = await model.generateContent([SYSTEM_PROMPT, userPrompt]);
     const response = await result.response;
     const text = response.text();
 
-    // Parse logic to ensure it's valid JSON
     let analysisData;
     try {
       analysisData = JSON.parse(text);
     } catch (e) {
       console.error("JSON Parse Error:", text);
       return res.status(500).json({ error: "AI returned invalid JSON" });
+    }
+
+    // ---------------------------
+    // 2. DEDUCT CREDIT
+    // ---------------------------
+    if (userId) {
+      const { data: user } = await supabase
+        .from('users')
+        .select('credits')
+        .eq('user_id', userId)
+        .single();
+
+      await supabase
+        .from('users')
+        .update({ credits: user.credits - 1 })
+        .eq('user_id', userId);
     }
 
     res.json(analysisData);
@@ -128,7 +179,9 @@ app.post('/api/analyze', async (req, res) => {
   }
 });
 
-// Start Server
+// ---------------------------
+// START SERVER
+// ---------------------------
 app.listen(port, () => {
-  // console.log(`🚀 AI Brain online at http://localhost:${port}`);
+  console.log(`🚀 Server running on port ${port}`);
 });

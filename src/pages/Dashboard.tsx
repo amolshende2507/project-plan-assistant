@@ -19,6 +19,8 @@ import { Coins } from 'lucide-react';
 
 import { ProjectInput, AnalysisResult } from '@/types/analyzer';
 import { useUser } from "@clerk/clerk-react";
+
+
 const Dashboard = () => {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [currentInput, setCurrentInput] = useState<ProjectInput | null>(null);
@@ -31,7 +33,7 @@ const Dashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const { credits, spendCredit } = useCredits();
-  const { user, isSignedIn } = useUser(); 
+  const { user, isSignedIn } = useUser();
 
   const API_URL =
     import.meta.env.VITE_API_URL || 'https://YOUR-BACKEND-URL.onrender.com';
@@ -100,7 +102,7 @@ const Dashboard = () => {
   };
 
   const handleSubmit = async (input: ProjectInput) => {
-    // ✅ CREDIT CHECK
+    // ✅ CREDIT CHECK (frontend soft-check)
     const success = spendCredit();
 
     if (!success) {
@@ -119,7 +121,15 @@ const Dashboard = () => {
       const response = await fetch(`${API_URL}/api/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(input),
+        body: JSON.stringify({
+          ...input,
+
+          // 👇 SEND USER IDENTITY TO SERVER
+          userId: isSignedIn ? user?.id : null,
+          userEmail: isSignedIn
+            ? user?.primaryEmailAddress?.emailAddress
+            : null,
+        }),
       });
 
       if (!response.ok) throw new Error('Server Error');
@@ -137,6 +147,7 @@ const Dashboard = () => {
     }
   };
 
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
@@ -151,11 +162,11 @@ const Dashboard = () => {
               {isSignedIn ? 'Ready to engineer your next big idea?' : 'Enter details below to generate a blueprint.'}
             </p>
           </div>
-          
+
           {/* Credit Badge (Existing) */}
           <Badge variant={credits > 0 ? "secondary" : "destructive"} className="gap-1.5 py-1.5 px-3">
-             <Coins className="h-3.5 w-3.5" />
-             {credits} Credits Left
+            <Coins className="h-3.5 w-3.5" />
+            {credits} Credits Left
           </Badge>
         </div>
       </div>
