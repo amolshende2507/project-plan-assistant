@@ -20,20 +20,22 @@ import { Coins } from 'lucide-react';
 import { ProjectInput, AnalysisResult } from '@/types/analyzer';
 import { useUser } from "@clerk/clerk-react";
 
-
 const Dashboard = () => {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [currentInput, setCurrentInput] = useState<ProjectInput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isSharedMode, setIsSharedMode] = useState(false);
-
   const [showPaywall, setShowPaywall] = useState(false);
 
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const { credits, spendCredit } = useCredits();
   const { user, isSignedIn } = useUser();
+
+  // ✅ PASS USER ID INTO HOOK
+  const { credits, spendCredit, refreshCredits } = useCredits(
+    isSignedIn ? user?.id : null
+  );
 
   const API_URL =
     import.meta.env.VITE_API_URL || 'https://YOUR-BACKEND-URL.onrender.com';
@@ -41,9 +43,7 @@ const Dashboard = () => {
   // Load history + check for shared links
   useEffect(() => {
     const saved = localStorage.getItem('project_history');
-    if (saved) {
-      setHistory(JSON.parse(saved));
-    }
+    if (saved) setHistory(JSON.parse(saved));
 
     const sharedResult = searchParams.get('r');
     const sharedInput = searchParams.get('i');
@@ -102,10 +102,10 @@ const Dashboard = () => {
   };
 
   const handleSubmit = async (input: ProjectInput) => {
-    // ✅ CREDIT CHECK (frontend soft-check)
-    const success = spendCredit();
+    // ✅ LOCAL CREDIT CHECK
+    const canProceed = spendCredit();
 
-    if (!success) {
+    if (!canProceed) {
       setShowPaywall(true);
       return;
     }
@@ -114,7 +114,6 @@ const Dashboard = () => {
     setResult(null);
     setCurrentInput(input);
     setIsSharedMode(false);
-
     setSearchParams({});
 
     try {
@@ -123,8 +122,6 @@ const Dashboard = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...input,
-
-          // 👇 SEND USER IDENTITY TO SERVER
           userId: isSignedIn ? user?.id : null,
           userEmail: isSignedIn
             ? user?.primaryEmailAddress?.emailAddress
@@ -138,6 +135,9 @@ const Dashboard = () => {
       setResult(data);
       saveToHistory(input, data);
 
+      // ✅ REFRESH DB CREDITS AFTER SUCCESS
+      if (isSignedIn) refreshCredits();
+
       toast.success('Analysis Complete');
     } catch (error) {
       console.error(error);
@@ -147,39 +147,28 @@ const Dashboard = () => {
     }
   };
 
-
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
-      {/* Personalized Greeting */}
+
       <div className="container pt-6 pb-2">
         <div className="flex justify-between items-end">
           <div>
             <h1 className="text-2xl font-bold text-foreground">
-              {isSignedIn ? `Welcome back, ${user.firstName} 👋` : 'Project Analyzer'}
+              {isSignedIn ? `Welcome back, ${user?.firstName} 👋` : 'Project Analyzer'}
             </h1>
             <p className="text-muted-foreground">
-              {isSignedIn ? 'Ready to engineer your next big idea?' : 'Enter details below to generate a blueprint.'}
+              {isSignedIn
+                ? 'Ready to engineer your next big idea?'
+                : 'Enter details below to generate a blueprint.'}
             </p>
           </div>
 
-          {/* Credit Badge (Existing) */}
           <Badge variant={credits > 0 ? "secondary" : "destructive"} className="gap-1.5 py-1.5 px-3">
             <Coins className="h-3.5 w-3.5" />
             {credits} Credits Left
           </Badge>
         </div>
-      </div>
-
-      {/* CREDIT BALANCE */}
-      <div className="container pt-4 flex justify-end">
-        <Badge
-          variant={credits > 0 ? 'secondary' : 'destructive'}
-          className="gap-1.5 py-1.5 px-3"
-        >
-          <Coins className="h-3.5 w-3.5" />
-          {credits} Credits Left
-        </Badge>
       </div>
 
       <main className="container py-8 flex-1">
@@ -220,9 +209,7 @@ const Dashboard = () => {
         />
       </main>
 
-      {/* PAYWALL MODAL */}
       <CreditDialog open={showPaywall} onOpenChange={setShowPaywall} />
-
       <Footer />
     </div>
   );

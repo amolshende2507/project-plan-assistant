@@ -1,39 +1,57 @@
 import { useState, useEffect } from 'react';
 
-const INITIAL_CREDITS = 3;
+// Get API URL from env (handling Vite's way)
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-export function useCredits() {
-  const [credits, setCredits] = useState(INITIAL_CREDITS);
+export function useCredits(userId?: string | null) {
+  const [credits, setCredits] = useState(3);
+  const [loading, setLoading] = useState(true);
 
-  // 1. Load credits when the app starts
-  useEffect(() => {
-    const saved = localStorage.getItem('analyzer_credits');
-    // If no saved data, default to 3. If saved, parse it.
-    if (saved !== null) {
-      setCredits(parseInt(saved));
+  // 1. FETCH CREDITS (Hybrid Strategy)
+  const fetchCredits = async () => {
+    setLoading(true);
+    
+    if (userId) {
+      // 🟢 LOGGED IN: Fetch from Real Database
+      try {
+        const res = await fetch(`${API_URL}/api/credits?userId=${userId}`);
+        const data = await res.json();
+        setCredits(data.credits);
+      } catch (error) {
+        console.error("Failed to fetch credits", error);
+      }
     } else {
-      localStorage.setItem('analyzer_credits', INITIAL_CREDITS.toString());
+      // ⚪ GUEST: Fetch from LocalStorage
+      const saved = localStorage.getItem('analyzer_credits');
+      if (saved !== null) {
+        setCredits(parseInt(saved));
+      } else {
+        setCredits(3); // Default Guest Limit
+      }
     }
-  }, []);
+    setLoading(false);
+  };
 
-  // 2. The function to spend a credit
-  const spendCredit = (): boolean => {
-    if (credits <= 0) {
-      return false; // Transaction Failed: No money
-    }
+  // Run on mount or when userId changes
+  useEffect(() => {
+    fetchCredits();
+  }, [userId]);
+
+  // 2. SPEND CREDIT (Optimistic UI Update)
+  // We decrement locally immediately for speed, backend validates later
+  const spendCredit = () => {
+    if (credits <= 0) return false;
 
     const newBalance = credits - 1;
     setCredits(newBalance);
-    localStorage.setItem('analyzer_credits', newBalance.toString());
-    return true; // Transaction Success
+
+    if (!userId) {
+      // Only update localStorage if guest
+      localStorage.setItem('analyzer_credits', newBalance.toString());
+    }
+    
+    return true;
   };
 
-  // 3. (Optional) Function to reset (for testing)
-  const addCredits = (amount: number) => {
-     const newBalance = credits + amount;
-     setCredits(newBalance);
-     localStorage.setItem('analyzer_credits', newBalance.toString());
-  };
-
-  return { credits, spendCredit, addCredits };
+  return { credits, spendCredit, refreshCredits: fetchCredits, loading };
 }

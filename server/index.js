@@ -178,7 +178,46 @@ app.post('/api/analyze', async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+// ... existing imports and config ...
 
+// 🟢 NEW ROUTE: Get User Credits
+app.get('/api/credits', async (req, res) => {
+  const { userId } = req.query;
+
+  if (!userId) {
+    return res.json({ credits: 3 }); // Default for guests
+  }
+
+  try {
+    // 1. Check if user exists in Supabase
+    let { data: user, error } = await supabase
+      .from('users')
+      .select('credits')
+      .eq('user_id', userId)
+      .single();
+
+    // 2. If user doesn't exist (First login), create them with 10 credits
+    if (!user) {
+      const { data: newUser, error: createError } = await supabase
+        .from('users')
+        .insert([{ user_id: userId, credits: 10 }]) // Give 10 credits
+        .select('credits')
+        .single();
+      
+      if (createError) throw createError;
+      return res.json({ credits: newUser.credits });
+    }
+
+    // 3. Return existing credits
+    res.json({ credits: user.credits });
+
+  } catch (error) {
+    console.error("Error fetching credits:", error);
+    res.status(500).json({ error: "Failed to fetch credits" });
+  }
+});
+
+// ... existing app.post('/api/analyze') ...
 // ---------------------------
 // START SERVER
 // ---------------------------
