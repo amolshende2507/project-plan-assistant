@@ -13,6 +13,7 @@ import { Footer } from '@/components/layout/Footer';
 
 import { useCredits } from '@/hooks/useCredits';
 import { CreditDialog } from '@/components/dashboard/CreditDialog';
+import { PricingDialog } from '@/components/dashboard/PricingDialog';
 
 import { Badge } from '@/components/ui/badge';
 import { Coins } from 'lucide-react';
@@ -26,13 +27,15 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isSharedMode, setIsSharedMode] = useState(false);
-  const [showPaywall, setShowPaywall] = useState(false);
+
+  const [showPaywall, setShowPaywall] = useState(false); // guest signup
+  const [showPricing, setShowPricing] = useState(false); // logged-in upgrade
 
   const [searchParams, setSearchParams] = useSearchParams();
 
   const { user, isSignedIn } = useUser();
 
-  // ✅ PASS USER ID INTO HOOK
+  // PASS USER ID INTO CREDIT HOOK
   const { credits, spendCredit, refreshCredits } = useCredits(
     isSignedIn ? user?.id : null
   );
@@ -40,7 +43,7 @@ const Dashboard = () => {
   const API_URL =
     import.meta.env.VITE_API_URL || 'https://YOUR-BACKEND-URL.onrender.com';
 
-  // Load history + check for shared links
+  // Load history + shared links
   useEffect(() => {
     const saved = localStorage.getItem('project_history');
     if (saved) setHistory(JSON.parse(saved));
@@ -102,11 +105,14 @@ const Dashboard = () => {
   };
 
   const handleSubmit = async (input: ProjectInput) => {
-    // ✅ LOCAL CREDIT CHECK
-    const canProceed = spendCredit();
+    const success = spendCredit();
 
-    if (!canProceed) {
-      setShowPaywall(true);
+    if (!success) {
+      if (isSignedIn) {
+        setShowPricing(true); // logged-in user upgrade
+      } else {
+        setShowPaywall(true); // guest signup
+      }
       return;
     }
 
@@ -135,7 +141,6 @@ const Dashboard = () => {
       setResult(data);
       saveToHistory(input, data);
 
-      // ✅ REFRESH DB CREDITS AFTER SUCCESS
       if (isSignedIn) refreshCredits();
 
       toast.success('Analysis Complete');
@@ -209,7 +214,21 @@ const Dashboard = () => {
         />
       </main>
 
+      {/* Guest Signup Modal */}
       <CreditDialog open={showPaywall} onOpenChange={setShowPaywall} />
+
+      {/* Logged-in Pricing Modal */}
+      {isSignedIn && user && (
+        <PricingDialog
+          open={showPricing}
+          onOpenChange={setShowPricing}
+          userId={user.id}
+          onSuccess={() => {
+            refreshCredits();
+          }}
+        />
+      )}
+
       <Footer />
     </div>
   );

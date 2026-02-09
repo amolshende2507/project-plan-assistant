@@ -218,6 +218,39 @@ app.get('/api/credits', async (req, res) => {
 });
 
 // ... existing app.post('/api/analyze') ...
+// 🟢 NEW ROUTE: Simulate Payment / Add Credits
+app.post('/api/add-credits', async (req, res) => {
+  const { userId, amount } = req.body;
+
+  if (!userId) return res.status(400).json({ error: "Missing User ID" });
+
+  try {
+    // 1. Get current credits
+    const { data: user } = await supabase
+      .from('users')
+      .select('credits')
+      .eq('user_id', userId)
+      .single();
+
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    // 2. Add 'amount' to current credits
+    const newBalance = user.credits + amount;
+
+    // 3. Update DB
+    await supabase
+      .from('users')
+      .update({ credits: newBalance })
+      .eq('user_id', userId);
+
+    res.json({ success: true, newBalance });
+    console.log(`💰 User ${userId} bought ${amount} credits. New Balance: ${newBalance}`);
+
+  } catch (error) {
+    console.error("Payment Error:", error);
+    res.status(500).json({ error: "Payment failed" });
+  }
+});
 // ---------------------------
 // START SERVER
 // ---------------------------
