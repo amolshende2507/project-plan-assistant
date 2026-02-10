@@ -66,7 +66,7 @@ export function PricingDialog({ open, onOpenChange, userId, onSuccess }: Pricing
 
         <div className="p-6 bg-background">
           <div className="flex justify-center items-baseline gap-1 mb-6">
-            <span className="text-4xl font-bold">5</span>
+            <span className="text-4xl font-bold">₹500</span>
             <span className="text-muted-foreground">/ month</span>
           </div>
 
