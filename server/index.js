@@ -86,6 +86,48 @@ SCENARIO LOGIC:
 - Always generate an architecture diagram that matches the solution.
 `;
 
+// ... imports ...
+
+// 🟢 NEW ROUTE: Share Project (Save to DB)
+app.post('/api/share', async (req, res) => {
+  const { input, result } = req.body;
+
+  try {
+    const { data, error } = await supabase
+      .from('shared_projects')
+      .insert([{ input, result }])
+      .select('id')
+      .single();
+
+    if (error) throw error;
+
+    res.json({ id: data.id });
+  } catch (error) {
+    console.error("Share Error:", error);
+    res.status(500).json({ error: "Failed to share project" });
+  }
+});
+
+// 🟢 NEW ROUTE: Get Shared Project (Load from DB)
+app.get('/api/share/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const { data, error } = await supabase
+      .from('shared_projects')
+      .select('input, result')
+      .eq('id', id)
+      .single();
+
+    if (error) return res.status(404).json({ error: "Project not found" });
+
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to load project" });
+  }
+});
+
+// ... existing routes ...
 // ---------------------------------------------------------
 // API ROUTE
 // ---------------------------------------------------------

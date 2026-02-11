@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
 import { Download, Sparkles, LayoutDashboard, Link2 } from 'lucide-react';
 import { toast } from 'sonner';
-import LZString from 'lz-string';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -25,7 +24,7 @@ interface OutputPanelProps {
 }
 
 export function OutputPanel({ result, input, isLoading }: OutputPanelProps) {
-  // Loading Skeleton
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -43,7 +42,6 @@ export function OutputPanel({ result, input, isLoading }: OutputPanelProps) {
     );
   }
 
-  // Empty State
   if (!result) {
     return (
       <div className="flex items-center justify-center h-full min-h-[500px] border-2 border-dashed border-border/50 rounded-xl bg-muted/5">
@@ -70,30 +68,39 @@ export function OutputPanel({ result, input, isLoading }: OutputPanelProps) {
     downloadMarkdown(md, 'project-blueprint.md');
   };
 
-  // 🔗 SHARE SNAPSHOT (COMPRESSED URL)
-  const handleShare = () => {
+  // 🔗 SHARE (DATABASE SHORT LINK)
+  const handleShare = async () => {
     if (!input || !result) return;
 
+    const API_URL =
+      import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+    toast.loading("Creating public link...");
+
     try {
-      const compressedResult = LZString.compressToEncodedURIComponent(
-        JSON.stringify(result)
-      );
-      const compressedInput = LZString.compressToEncodedURIComponent(
-        JSON.stringify(input)
-      );
+      const res = await fetch(`${API_URL}/api/share`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input, result })
+      });
+
+      if (!res.ok) throw new Error("Share failed");
+
+      const data = await res.json();
 
       const url = new URL(window.location.href);
-      url.searchParams.set('r', compressedResult);
-      url.searchParams.set('i', compressedInput);
+      url.search = `?id=${data.id}`;
 
-      navigator.clipboard.writeText(url.toString());
+      await navigator.clipboard.writeText(url.toString());
 
-      toast.success('Snapshot Link Created', {
-        description: 'This link contains the FULL analysis. Share it with anyone.',
+      toast.dismiss();
+      toast.success("Link Copied!", {
+        description: "Share this short link with anyone."
       });
+
     } catch (error) {
-      console.error(error);
-      toast.error('Failed to create share link');
+      toast.dismiss();
+      toast.error("Share Failed");
     }
   };
 
@@ -103,7 +110,6 @@ export function OutputPanel({ result, input, isLoading }: OutputPanelProps) {
       animate={{ opacity: 1 }}
       className="space-y-8 pb-12"
     >
-      {/* HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-6">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -113,22 +119,15 @@ export function OutputPanel({ result, input, isLoading }: OutputPanelProps) {
             </h2>
           </div>
           <div className="flex gap-2">
-            <Badge
-              variant="outline"
-              className="text-xs font-normal text-muted-foreground"
-            >
+            <Badge variant="outline" className="text-xs font-normal text-muted-foreground">
               {input?.skillLevel} Level
             </Badge>
-            <Badge
-              variant="outline"
-              className="text-xs font-normal text-muted-foreground"
-            >
+            <Badge variant="outline" className="text-xs font-normal text-muted-foreground">
               {input?.totalWeeks} Weeks
             </Badge>
           </div>
         </div>
 
-        {/* ACTION BUTTONS */}
         <div className="flex gap-2">
           <Button
             variant="secondary"
@@ -152,7 +151,6 @@ export function OutputPanel({ result, input, isLoading }: OutputPanelProps) {
         </div>
       </div>
 
-      {/* ROW 1: STRATEGY */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {result.feasibility && (
           <FeasibilityCard data={result.feasibility} delay={0.1} />
@@ -160,23 +158,19 @@ export function OutputPanel({ result, input, isLoading }: OutputPanelProps) {
         <TimelineEstimate timeline={result.timeline} delay={0.2} />
       </div>
 
-      {/* ROW 2: ARCHITECTURE */}
       {result.architectureDiagram && (
         <ArchitectureView code={result.architectureDiagram} delay={0.3} />
       )}
 
-      {/* ROW 3: EXECUTION */}
       <div className="grid grid-cols-1 gap-6">
         <TechStackCard techStack={result.techStack} delay={0.4} />
         <FeatureBreakdown features={result.features} delay={0.5} />
       </div>
 
-      {/* ROW 4: CODING PROMPTS */}
       {input && (
         <CodingPrompts input={input} result={result} delay={0.55} />
       )}
 
-      {/* ROW 5: RISKS */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <RisksWarnings risks={result.risks} delay={0.6} />
         <AssumptionsList assumptions={result.assumptions} delay={0.7} />

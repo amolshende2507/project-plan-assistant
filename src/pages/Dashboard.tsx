@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import LZString from 'lz-string';
 
 import { Navbar } from '@/components/layout/Navbar';
 import { TwoColumnLayout } from '@/components/layout/TwoColumnLayout';
@@ -28,14 +27,13 @@ const Dashboard = () => {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isSharedMode, setIsSharedMode] = useState(false);
 
-  const [showPaywall, setShowPaywall] = useState(false); // guest signup
-  const [showPricing, setShowPricing] = useState(false); // logged-in upgrade
+  const [showPaywall, setShowPaywall] = useState(false);
+  const [showPricing, setShowPricing] = useState(false);
 
   const [searchParams, setSearchParams] = useSearchParams();
 
   const { user, isSignedIn } = useUser();
 
-  // PASS USER ID INTO CREDIT HOOK
   const { credits, spendCredit, refreshCredits } = useCredits(
     isSignedIn ? user?.id : null
   );
@@ -43,38 +41,36 @@ const Dashboard = () => {
   const API_URL =
     import.meta.env.VITE_API_URL || 'https://YOUR-BACKEND-URL.onrender.com';
 
-  // Load history + shared links
+  // Load history + shared project
   useEffect(() => {
     const saved = localStorage.getItem('project_history');
     if (saved) setHistory(JSON.parse(saved));
 
-    const sharedResult = searchParams.get('r');
-    const sharedInput = searchParams.get('i');
+    const sharedId = searchParams.get('id');
 
-    if (sharedResult && sharedInput) {
-      try {
-        const decompressedResult = JSON.parse(
-          LZString.decompressFromEncodedURIComponent(sharedResult)
-        );
-        const decompressedInput = JSON.parse(
-          LZString.decompressFromEncodedURIComponent(sharedInput)
-        );
+    if (sharedId) {
+      toast.loading("Loading shared project...");
 
-        if (decompressedResult && decompressedInput) {
-          setResult(decompressedResult);
-          setCurrentInput(decompressedInput);
+      fetch(`${API_URL}/api/share/${sharedId}`)
+        .then(res => {
+          if (!res.ok) throw new Error("Not Found");
+          return res.json();
+        })
+        .then(data => {
+          setResult(data.result);
+          setCurrentInput(data.input);
           setIsSharedMode(true);
-
-          toast.info('Viewing Shared Plan', {
-            description: 'This is a read-only view of a shared project.',
+          toast.dismiss();
+          toast.success("Project Loaded", {
+            description: "Viewing read-only mode",
           });
-        }
-      } catch (error) {
-        console.error('Failed to load shared link', error);
-        toast.error('Invalid Link', {
-          description: 'Could not load shared project.',
+        })
+        .catch(() => {
+          toast.dismiss();
+          toast.error("Error", {
+            description: "Shared project not found.",
+          });
         });
-      }
     }
   }, [searchParams]);
 
@@ -108,11 +104,8 @@ const Dashboard = () => {
     const success = spendCredit();
 
     if (!success) {
-      if (isSignedIn) {
-        setShowPricing(true); // logged-in user upgrade
-      } else {
-        setShowPaywall(true); // guest signup
-      }
+      if (isSignedIn) setShowPricing(true);
+      else setShowPaywall(true);
       return;
     }
 
@@ -214,10 +207,8 @@ const Dashboard = () => {
         />
       </main>
 
-      {/* Guest Signup Modal */}
       <CreditDialog open={showPaywall} onOpenChange={setShowPaywall} />
 
-      {/* Logged-in Pricing Modal */}
       {isSignedIn && user && (
         <PricingDialog
           open={showPricing}
