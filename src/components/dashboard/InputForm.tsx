@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom'; // 👈 Import this
 import { motion } from 'framer-motion';
-import { Send, Link2 } from 'lucide-react'; // Import Link icon
+import { Send, Link2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ProjectInput, SkillLevel, TeamSize, Platform } from '@/types/analyzer';
 import { defaultInput } from '@/data/mockData';
+
 
 interface InputFormProps {
   onSubmit: (input: ProjectInput) => void;
@@ -253,13 +254,22 @@ export function InputForm({ onSubmit, isLoading }: InputFormProps) {
         {/* Submit */}
         <Button
           type="submit"
-          className="w-full gap-2"
+          className="w-full gap-2 h-12 text-lg font-medium shadow-md hover:shadow-lg transition-all"
           size="lg"
           disabled={!formData.projectIdea.trim() || isLoading}
         >
-          {isLoading ? "Analyzing..." : "Analyze Project"}
-          {!isLoading && <Send className="h-4 w-4" />}
+          {isLoading ? (
+            <>
+              <Loader2 className="h-5 w-5 animate-spin" />
+              <span className="animate-pulse">Reasoning...</span>
+            </>
+          ) : (
+            <>
+              Analyze Project <Send className="h-4 w-4 ml-1" />
+            </>
+          )}
         </Button>
+
       </form>
     </motion.div>
   );

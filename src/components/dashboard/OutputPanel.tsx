@@ -1,11 +1,9 @@
 import { motion } from 'framer-motion';
-import { Download, Sparkles, LayoutDashboard, Link2 } from 'lucide-react';
-import { toast } from 'sonner';
-
+import { Download, Sparkles, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-
 import { AnalysisResult, ProjectInput } from '@/types/analyzer';
+
 import { FeatureBreakdown } from './FeatureBreakdown';
 import { TechStackCard } from './TechStackCard';
 import { TimelineEstimate } from './TimelineEstimate';
@@ -23,157 +21,151 @@ interface OutputPanelProps {
   isLoading?: boolean;
 }
 
+/* Animation variants */
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 },
+};
+
 export function OutputPanel({ result, input, isLoading }: OutputPanelProps) {
 
+  /* Loading */
   if (isLoading) {
     return (
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <div className="h-8 w-48 bg-muted rounded animate-pulse" />
-          <div className="h-9 w-32 bg-muted rounded animate-pulse" />
+          <div className="h-8 w-48 bg-muted/50 rounded animate-pulse" />
+          <div className="h-9 w-32 bg-muted/50 rounded animate-pulse" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="h-64 bg-card rounded-lg border border-border p-6 animate-pulse" />
-          <div className="h-64 bg-card rounded-lg border border-border p-6 animate-pulse" />
+          <div className="h-64 bg-card/50 rounded-xl border border-border/50 animate-pulse" />
+          <div className="h-64 bg-card/50 rounded-xl border border-border/50 animate-pulse" />
         </div>
-        <div className="h-48 bg-card rounded-lg border border-border p-6 animate-pulse" />
-        <div className="h-96 bg-card rounded-lg border border-border p-6 animate-pulse" />
+        <div className="h-48 bg-card/50 rounded-xl border border-border/50 animate-pulse" />
       </div>
     );
   }
 
+  /* Empty state */
   if (!result) {
     return (
-      <div className="flex items-center justify-center h-full min-h-[500px] border-2 border-dashed border-border/50 rounded-xl bg-muted/5">
+      <div className="flex items-center justify-center h-full min-h-[500px] border-2 border-dashed border-border/40 rounded-xl bg-muted/5">
         <div className="text-center p-8">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-primary/5 border border-primary/10 flex items-center justify-center">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-primary/5 border border-primary/10 flex items-center justify-center shadow-lg shadow-primary/5">
             <LayoutDashboard className="w-10 h-10 text-primary/60" />
           </div>
           <h3 className="text-xl font-semibold text-foreground mb-2">
-            Ready to Analyze
+            Ready to Engineer
           </h3>
           <p className="text-muted-foreground max-w-[280px] mx-auto leading-relaxed">
-            Fill in your project constraints on the left to generate an
-            engineering-grade blueprint.
+            Fill in the constraints to generate your professional blueprint.
           </p>
         </div>
       </div>
     );
   }
 
-  // Export Markdown
   const handleExport = () => {
     if (!input || !result) return;
     const md = generateMarkdown(input, result);
     downloadMarkdown(md, 'project-blueprint.md');
   };
 
-  // 🔗 SHARE (DATABASE SHORT LINK)
-  const handleShare = async () => {
-    if (!input || !result) return;
-
-    const API_URL =
-      import.meta.env.VITE_API_URL || 'http://localhost:5000';
-
-    toast.loading("Creating public link...");
-
-    try {
-      const res = await fetch(`${API_URL}/api/share`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ input, result })
-      });
-
-      if (!res.ok) throw new Error("Share failed");
-
-      const data = await res.json();
-
-      const url = new URL(window.location.href);
-      url.search = `?id=${data.id}`;
-
-      await navigator.clipboard.writeText(url.toString());
-
-      toast.dismiss();
-      toast.success("Link Copied!", {
-        description: "Share this short link with anyone."
-      });
-
-    } catch (error) {
-      toast.dismiss();
-      toast.error("Share Failed");
-    }
-  };
-
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
       className="space-y-8 pb-12"
     >
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-6">
+      {/* Header */}
+      <motion.div
+        variants={itemVariants}
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-6"
+      >
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Sparkles className="h-5 w-5 text-primary" />
-            <h2 className="text-2xl font-bold text-foreground">
+          <div className="flex items-center gap-2 mb-2">
+            <Sparkles className="h-5 w-5 text-primary animate-pulse" />
+            <h2 className="text-2xl font-bold text-foreground tracking-tight">
               Engineering Blueprint
             </h2>
           </div>
           <div className="flex gap-2">
-            <Badge variant="outline" className="text-xs font-normal text-muted-foreground">
-              {input?.skillLevel} Level
+            <Badge variant="secondary" className="text-xs font-normal">
+              {input?.skillLevel}
             </Badge>
-            <Badge variant="outline" className="text-xs font-normal text-muted-foreground">
+            <Badge variant="outline" className="text-xs font-normal">
               {input?.totalWeeks} Weeks
             </Badge>
           </div>
         </div>
 
-        <div className="flex gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            className="gap-2 shadow-sm"
-            onClick={handleShare}
-          >
-            <Link2 className="h-4 w-4" />
-            Share Snapshot
-          </Button>
+        <Button
+          variant="default"
+          size="sm"
+          className="gap-2 shadow-lg hover:shadow-primary/25 transition-all"
+          onClick={handleExport}
+        >
+          <Download className="h-4 w-4" />
+          Export Plan
+        </Button>
+      </motion.div>
 
-          <Button
-            variant="default"
-            size="sm"
-            className="gap-2 shadow-sm"
-            onClick={handleExport}
-          >
-            <Download className="h-4 w-4" />
-            Export Plan
-          </Button>
-        </div>
-      </div>
-
+      {/* Row 1 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {result.feasibility && (
-          <FeasibilityCard data={result.feasibility} delay={0.1} />
+          <motion.div variants={itemVariants} className="h-full">
+            <FeasibilityCard data={result.feasibility} />
+          </motion.div>
         )}
-        <TimelineEstimate timeline={result.timeline} delay={0.2} />
+        <motion.div variants={itemVariants} className="h-full">
+          <TimelineEstimate timeline={result.timeline} />
+        </motion.div>
       </div>
 
+      {/* Architecture */}
       {result.architectureDiagram && (
-        <ArchitectureView code={result.architectureDiagram} delay={0.3} />
+        <motion.div variants={itemVariants}>
+          <ArchitectureView code={result.architectureDiagram} />
+        </motion.div>
       )}
 
+      {/* Execution */}
       <div className="grid grid-cols-1 gap-6">
-        <TechStackCard techStack={result.techStack} delay={0.4} />
-        <FeatureBreakdown features={result.features} delay={0.5} />
+        <motion.div variants={itemVariants}>
+          <TechStackCard techStack={result.techStack} />
+        </motion.div>
+        <motion.div variants={itemVariants}>
+          <FeatureBreakdown features={result.features} />
+        </motion.div>
       </div>
 
+      {/* Coding prompts */}
       {input && (
-        <CodingPrompts input={input} result={result} delay={0.55} />
+        <motion.div variants={itemVariants}>
+          <CodingPrompts input={input} result={result} />
+        </motion.div>
       )}
 
+      {/* Risks */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <RisksWarnings risks={result.risks} delay={0.6} />
-        <AssumptionsList assumptions={result.assumptions} delay={0.7} />
+        <motion.div variants={itemVariants} className="h-full">
+          <RisksWarnings risks={result.risks} />
+        </motion.div>
+        <motion.div variants={itemVariants} className="h-full">
+          <AssumptionsList assumptions={result.assumptions} />
+        </motion.div>
       </div>
     </motion.div>
   );

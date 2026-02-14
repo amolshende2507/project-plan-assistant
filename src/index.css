@@ -130,15 +130,14 @@
     --sidebar-ring: 217 91% 60%;
   }
 }
-
 @layer base {
-  * {
-    @apply border-border;
+  body {
+    @apply antialiased tracking-tight bg-background text-foreground;
   }
   
-  body {
-    @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Inter', system-ui, sans-serif;
+  /* Smooth scrolling for the whole page */
+  html {
+    scroll-behavior: smooth;
   }
 }
 
